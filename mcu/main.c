@@ -1,16 +1,18 @@
 
 #include "libraries/uart.h"
-
+#include "libraries/encoder.h"
 
 int main(void) 
 {
     CLKPR = 0;
+    /* initialize all necessary libraries */
     usart_init();
-    char str[100];
+    twi_init();
     while(1)
     {
-        scanf("%s", str);
-        printf("you typed in: %s\n", str);
+        printf("number of turns: %u\n", get_count());
+        printf("button pressed: %d\n", is_pressed());
+        _delay_ms(2000);
     }
     return 0;
 }

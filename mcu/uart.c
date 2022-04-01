@@ -9,9 +9,9 @@ void usart_init()
     UBRR0H = UBRRH_VALUE;
     UBRR0L = UBRRL_VALUE;
     /* Enable receiver and transmitter */
-    UCSR0B = (1<<RXEN0) | (1<<TXEN0);
+    UCSR0B = _BV(RXEN0) | _BV(TXEN0);
     /* Set frame format: 8data, 2stop bit */
-    UCSR0C = (1<<USBS0) | (3<<UCSZ00);
+    UCSR0C = _BV(USBS0) | _BV(UCSZ01) | _BV(UCSZ00);
 
     uart_output.put = (void*)usart_putchar;
     uart_output.get = NULL;
@@ -28,24 +28,23 @@ void usart_init()
     stdin  = &uart_input;
 }
 
-void usart_send( unsigned char data )
+void usart_send(byte data)
 {
     /* Wait for empty transmit buffer */
-    while ( !( UCSR0A & (1<<UDRE0)) );
+    while ( !( UCSR0A & _BV(UDRE0)) );
     /* Put data into buffer, sends the data */
     UDR0 = data;
 }
 
-unsigned char usart_recv( void )
+byte usart_recv()
 {
     /* Wait for data to be received */
-    while ( !(UCSR0A & (1<<RXC0)) )
-    ;
+    while ( !(UCSR0A & _BV(RXC0)) );
     /* Get and return received data from buffer */
     return UDR0;
 }
 
-void usart_putchar(unsigned char c, FILE *stream)
+void usart_putchar(byte c, FILE *stream)
 {
     if(c == 10) {           // \n ascii is 10
         usart_send(10);     // \r ascii is 13
@@ -54,7 +53,7 @@ void usart_putchar(unsigned char c, FILE *stream)
         usart_send(c);
 }
 
-unsigned char usart_getchar(FILE *stream) 
+byte usart_getchar(FILE *stream) 
 {
-    return (unsigned char) usart_recv();
+    return (byte) usart_recv();
 }
