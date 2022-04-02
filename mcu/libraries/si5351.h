@@ -22,8 +22,11 @@ typedef enum
     SI5351_PORT2
 } pll_ports_t;
 
-extern uint32_t freq_plla;
-extern uint32_t freq_pllb;
+extern float freq_vco_plla;
+extern float freq_vco_pllb;
+extern float freq_clock0;
+extern float freq_clock1;
+extern float freq_clock2;
 
 enum {
   SI5351_REGISTER_0_DEVICE_STATUS = 0,
@@ -111,7 +114,10 @@ typedef enum {
 } si5351MultisynthDiv_t;
 
 void si5351_init();
+void set_phase(byte port,byte mult);
 bool setup_PLL(plldev_t pll, byte mult, uint32_t num, uint32_t denom);
 bool clock_gen(plldev_t pll, byte port, uint32_t div, uint32_t num, uint32_t denom);
+void enable_clocks(bool enabled);
+void setColor(byte red, byte green, byte blue);
 
 #endif

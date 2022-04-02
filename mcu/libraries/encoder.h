@@ -32,6 +32,7 @@
 byte read_register(byte addr);
 word read_register16(byte addr);
 void write_register(byte addr, byte data);
+void write_register24(byte addr, uint32_t data);
 byte is_pressed();
 word get_count();
 

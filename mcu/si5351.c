@@ -5,8 +5,11 @@ static byte read_register(byte addr);
 static void enableSpreadSpectrum(bool enabled);
 static void write_register_arr(byte addr, byte* data, int len);
 
-uint32_t freq_plla;
-uint32_t freq_pllb;
+float freq_plla;
+float freq_pllb;
+float freq_clock0;
+float freq_clock1;
+float freq_clock2;
 
 void write_register(byte addr, byte data)
 {
@@ -66,6 +69,14 @@ void si5351_init()
     enableSpreadSpectrum(false);
     freq_plla = 0;
     freq_pllb = 0;
+    freq_clock0 = 0;
+    freq_clock1 = 0;
+    freq_clock2 = 0;
+}
+
+void enable_clocks(bool enabled)
+{
+    write_register(SI5351_REGISTER_3_OUTPUT_ENABLE_CONTROL, enabled ? 0x00 : 0xFF);
 }
 
 bool setup_PLL(plldev_t pll, byte mult, uint32_t num, uint32_t denom)
@@ -167,13 +178,34 @@ bool clock_gen(plldev_t pll, byte port, uint32_t div, uint32_t num, uint32_t den
     {
         case SI5351_PORT0: 
             write_register(SI5351_REGISTER_16_CLK0_CONTROL, clkCtrlReg);
+            freq_clock0 = (pll == SI5351_PLL_A) ? freq_plla / (div + num / denom) : freq_pllb / (div + num / denom);
             break;
         case SI5351_PORT1:
             write_register(SI5351_REGISTER_17_CLK1_CONTROL, clkCtrlReg);
+            freq_clock1 = (pll == SI5351_PLL_A) ? freq_plla / (div + num / denom) : freq_pllb / (div + num / denom);
             break;
         case SI5351_PORT2:
             write_register(SI5351_REGISTER_18_CLK2_CONTROL, clkCtrlReg);
+            freq_clock2 = (pll == SI5351_PLL_A) ? freq_plla / (div + num / denom) : freq_pllb / (div + num / denom);
             break;
     }
     return 1;
+}
+
+void set_phase(byte port,byte mult)
+{
+    mult = mult & 0xb01111111;
+    switch(port) 
+    {
+        case SI5351_PORT0: 
+            write_register(SI5351_REGISTER_165_CLK0_INITIAL_PHASE_OFFSET, mult);
+            break;
+        case SI5351_PORT1:
+            write_register(SI5351_REGISTER_166_CLK1_INITIAL_PHASE_OFFSET, mult);
+            break;
+        case SI5351_PORT2:
+            write_register(SI5351_REGISTER_167_CLK2_INITIAL_PHASE_OFFSET, mult);
+            break;
+    }
+
 }

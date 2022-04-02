@@ -27,6 +27,7 @@ word read_register16(byte addr)
     return ((word)msb << 8) | lsb;
 }
 
+
 void write_register(byte addr, byte data)
 {
     twi_start();
@@ -34,6 +35,22 @@ void write_register(byte addr, byte data)
     twi_MT_write(addr);
     twi_MT_write(data);
     twi_stop();
+}
+
+void write_register24(byte addr, uint32_t data)
+{
+    twi_start();
+    twi_MT_SLA_W(QWIIC_TWIST_ADDR);
+    twi_MT_write(addr);
+    twi_MT_write(data >> 16);
+    twi_MT_write(data >> 8);
+    twi_MT_write(data & 0xFF);
+    twi_stop();
+}
+
+void setColor(byte red, byte green, byte blue)
+{
+    write_register24(TWIST_RED, (uint32_t)red << 16 | (uint32_t)green << 8 | blue);
 }
 
 
