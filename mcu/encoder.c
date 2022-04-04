@@ -37,6 +37,16 @@ void write_register(byte addr, byte data)
     twi_stop();
 }
 
+void write_register16(byte addr, word data)
+{
+    twi_start();
+    twi_MT_SLA_W(QWIIC_TWIST_ADDR);
+    twi_MT_write(addr);
+    twi_MT_write(data & 0xFF);
+    twi_MT_write(data >> 8);
+    twi_stop();
+}
+
 void write_register24(byte addr, uint32_t data)
 {
     twi_start();
@@ -61,7 +71,19 @@ byte is_pressed()
     return (status & _BV(TWIST_PRESS_STATUS)) > 0;
 }
 
+byte is_moved()
+{
+    byte status = read_register(TWIST_STATUS);
+    write_register(TWIST_STATUS, status & ~_BV(TWIST_MOVED_STATUS));
+    return (status & _BV(TWIST_MOVED_STATUS)) > 0;
+}
+
 word get_count()
 {
     return read_register16(TWIST_COUNT);
+}
+
+void set_count(word cnt) 
+{
+    write_register16(TWIST_COUNT, cnt);
 }

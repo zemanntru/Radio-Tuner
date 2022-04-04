@@ -9,6 +9,7 @@
 
 #define SI5351_CRYSTAL_FREQ_25MHZ 25
 #define SI5351_CRYSTAL_LOAD_10PF (3 << 6)
+
 typedef enum 
 {
     SI5351_PLL_A = 0, 
@@ -24,9 +25,9 @@ typedef enum
 
 extern float freq_vco_plla;
 extern float freq_vco_pllb;
-extern float freq_clock0;
-extern float freq_clock1;
-extern float freq_clock2;
+extern uint32_t freq_clock0;
+extern uint32_t freq_clock1;
+extern uint32_t freq_clock2;
 
 enum {
   SI5351_REGISTER_0_DEVICE_STATUS = 0,

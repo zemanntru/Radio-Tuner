@@ -27,13 +27,16 @@
 #define TWIST_CHANGE_ADDRESS 0x18
 #define TWIST_LIMIT 0x19
 
-#define TWIST_PRESS_STATUS 1
+#define TWIST_PRESS_STATUS 2
+#define TWIST_MOVED_STATUS 0
 
 byte read_register(byte addr);
 word read_register16(byte addr);
 void write_register(byte addr, byte data);
 void write_register24(byte addr, uint32_t data);
 byte is_pressed();
+byte is_moved();
 word get_count();
+void set_count(word cnt);
 
 #endif

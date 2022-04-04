@@ -5,11 +5,11 @@ static byte read_register(byte addr);
 static void enableSpreadSpectrum(bool enabled);
 static void write_register_arr(byte addr, byte* data, int len);
 
-float freq_plla;
-float freq_pllb;
-float freq_clock0;
-float freq_clock1;
-float freq_clock2;
+float freq_vco_plla;
+float freq_vco_pllb;
+uint32_t freq_clock0;
+uint32_t freq_clock1;
+uint32_t freq_clock2;
 
 void write_register(byte addr, byte data)
 {
@@ -67,8 +67,9 @@ void si5351_init()
     write_register(SI5351_REGISTER_23_CLK7_CONTROL, 0x80);
     write_register(SI5351_REGISTER_183_CRYSTAL_INTERNAL_LOAD_CAPACITANCE, SI5351_CRYSTAL_LOAD_10PF);
     enableSpreadSpectrum(false);
-    freq_plla = 0;
-    freq_pllb = 0;
+
+    freq_vco_plla = 0;
+    freq_vco_pllb = 0;
     freq_clock0 = 0;
     freq_clock1 = 0;
     freq_clock2 = 0;
@@ -113,9 +114,9 @@ bool setup_PLL(plldev_t pll, byte mult, uint32_t num, uint32_t denom)
     fvco = fvco * (((float)num / (float)denom) + mult);
 
     if(pll == SI5351_PLL_A) 
-        freq_plla = fvco;
+        freq_vco_plla = fvco;
     else
-        freq_pllb = fvco;
+        freq_vco_pllb = fvco;
 
     return 1;
 }
@@ -178,15 +179,15 @@ bool clock_gen(plldev_t pll, byte port, uint32_t div, uint32_t num, uint32_t den
     {
         case SI5351_PORT0: 
             write_register(SI5351_REGISTER_16_CLK0_CONTROL, clkCtrlReg);
-            freq_clock0 = (pll == SI5351_PLL_A) ? freq_plla / (div + num / denom) : freq_pllb / (div + num / denom);
+            freq_clock0 = (pll == SI5351_PLL_A) ? freq_vco_plla / (div + num / denom) : freq_vco_pllb / (div + num / denom);
             break;
         case SI5351_PORT1:
             write_register(SI5351_REGISTER_17_CLK1_CONTROL, clkCtrlReg);
-            freq_clock1 = (pll == SI5351_PLL_A) ? freq_plla / (div + num / denom) : freq_pllb / (div + num / denom);
+            freq_clock1 = (pll == SI5351_PLL_A) ? freq_vco_plla / (div + num / denom) : freq_vco_pllb / (div + num / denom);
             break;
         case SI5351_PORT2:
             write_register(SI5351_REGISTER_18_CLK2_CONTROL, clkCtrlReg);
-            freq_clock2 = (pll == SI5351_PLL_A) ? freq_plla / (div + num / denom) : freq_pllb / (div + num / denom);
+            freq_clock2 = (pll == SI5351_PLL_A) ? freq_vco_plla / (div + num / denom) : freq_vco_pllb / (div + num / denom);
             break;
     }
     return 1;
