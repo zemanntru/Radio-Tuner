@@ -1,5 +1,7 @@
 #include "libraries/encoder.h"
 
+byte lastRdivValue[3];
+
 byte read_register(byte addr)
 {
     byte ret;
