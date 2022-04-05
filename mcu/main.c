@@ -25,7 +25,7 @@ int main(void)
         } else {
             PORTD &= ~(_BV(PORTD5) | _BV(PORTD4));
         }
-        _delay_ms(1000);
+        //_delay_ms(1000);
     }
     return 0;
 }
