@@ -3,12 +3,19 @@
 
 #include "twi.h"
 #include "uart.h"
-#define SI5351_ADDR 0x60
-#define SI5351_PLLA_ADDR 26
-#define SI5351_PLLB_ADDR 34
+#define SI5351_ADDR                     0x60
+#define SI5351_PLLA_ADDR                26
+#define SI5351_PLLB_ADDR                34
 
-#define SI5351_CRYSTAL_FREQ_25MHZ 25
-#define SI5351_CRYSTAL_LOAD_10PF (3 << 6)
+#define SI5351_XTAL_FREQ                25000000
+
+#define SI5351_CRYSTAL_LOAD_MASK        (3<<6)
+#define SI5351_CRYSTAL_LOAD_8PF         (2<<6)
+#define SI5351_CRYSTAL_LOAD_10PF        (3<<6)
+
+#define SI5351_PLL_RESET_B              (1<<7)
+#define SI5351_PLL_RESET_A              (1<<5)
+
 
 typedef enum 
 {
@@ -22,12 +29,6 @@ typedef enum
     SI5351_PORT1,
     SI5351_PORT2
 } pll_ports_t;
-
-extern float freq_vco_plla;
-extern float freq_vco_pllb;
-extern uint32_t freq_clock0;
-extern uint32_t freq_clock1;
-extern uint32_t freq_clock2;
 
 enum {
   SI5351_REGISTER_0_DEVICE_STATUS = 0,
@@ -96,7 +97,7 @@ enum {
   SI5351_REGISTER_89_MULTISYNTH5_PARAMETERS_8 = 89,
   SI5351_REGISTER_90_MULTISYNTH6_PARAMETERS = 90,
   SI5351_REGISTER_91_MULTISYNTH7_PARAMETERS = 91,
-  SI5351_REGISTER_092_CLOCK_6_7_OUTPUT_DIVIDER = 92,
+  SI5351_REGISTER_92_CLOCK_6_7_OUTPUT_DIVIDER = 92,
   SI5351_REGISTER_149_SPREAD_SPECTRUM_PARAMETERS = 149,
   SI5351_REGISTER_165_CLK0_INITIAL_PHASE_OFFSET = 165,
   SI5351_REGISTER_166_CLK1_INITIAL_PHASE_OFFSET = 166,
@@ -114,11 +115,24 @@ typedef enum {
   SI5351_MULTISYNTH_DIV_8 = 8
 } si5351MultisynthDiv_t;
 
+typedef enum {
+  SI5351_R_DIV_1 = 0,
+  SI5351_R_DIV_2 = 1,
+  SI5351_R_DIV_4 = 2,
+  SI5351_R_DIV_8 = 3,
+  SI5351_R_DIV_16 = 4,
+  SI5351_R_DIV_32 = 5,
+  SI5351_R_DIV_64 = 6,
+  SI5351_R_DIV_128 = 7,
+} si5351RDiv_t;
+
+
 void si5351_init();
 void set_phase(byte port,byte mult);
-bool setup_PLL(plldev_t pll, byte mult, uint32_t num, uint32_t denom);
-bool clock_gen(plldev_t pll, byte port, uint32_t div, uint32_t num, uint32_t denom);
+void setup_PLL(plldev_t pll, byte mult, uint32_t num, uint32_t denom);
+void setup_clock(plldev_t pll, byte port, uint32_t div, uint32_t num, uint32_t denom);
 void enable_clocks(bool enabled);
 void setColor(byte red, byte green, byte blue);
+void setup_Rdiv(byte output, si5351RDiv_t div);
 
 #endif

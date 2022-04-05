@@ -1,8 +1,12 @@
 #include "libraries/encoder.h"
 
-byte lastRdivValue[3];
+static byte read(byte addr);
+static word read16(byte addr);
+static void write(byte addr, byte data);
+static void write16(byte addr, word data);
+static void write24(byte addr, uint32_t data);
 
-byte read_register(byte addr)
+byte read(byte addr)
 {
     byte ret;
     twi_start();
@@ -15,7 +19,7 @@ byte read_register(byte addr)
     return ret;
 }
 
-word read_register16(byte addr)
+word read16(byte addr)
 {
     byte msb, lsb;
     twi_start();
@@ -30,7 +34,7 @@ word read_register16(byte addr)
 }
 
 
-void write_register(byte addr, byte data)
+void write(byte addr, byte data)
 {
     twi_start();
     twi_MT_SLA_W(QWIIC_TWIST_ADDR);
@@ -39,7 +43,7 @@ void write_register(byte addr, byte data)
     twi_stop();
 }
 
-void write_register16(byte addr, word data)
+void write16(byte addr, word data)
 {
     twi_start();
     twi_MT_SLA_W(QWIIC_TWIST_ADDR);
@@ -49,7 +53,7 @@ void write_register16(byte addr, word data)
     twi_stop();
 }
 
-void write_register24(byte addr, uint32_t data)
+void write24(byte addr, uint32_t data)
 {
     twi_start();
     twi_MT_SLA_W(QWIIC_TWIST_ADDR);
@@ -62,30 +66,30 @@ void write_register24(byte addr, uint32_t data)
 
 void setColor(byte red, byte green, byte blue)
 {
-    write_register24(TWIST_RED, (uint32_t)red << 16 | (uint32_t)green << 8 | blue);
+    write24(TWIST_RED, (uint32_t)red << 16 | (uint32_t)green << 8 | blue);
 }
 
 
 byte is_pressed()
 {
-    byte status = read_register(TWIST_STATUS);
-    write_register(TWIST_STATUS, status & ~_BV(TWIST_PRESS_STATUS));
+    byte status = read(TWIST_STATUS);
+    write(TWIST_STATUS, status & ~_BV(TWIST_PRESS_STATUS));
     return (status & _BV(TWIST_PRESS_STATUS)) > 0;
 }
 
 byte is_moved()
 {
-    byte status = read_register(TWIST_STATUS);
-    write_register(TWIST_STATUS, status & ~_BV(TWIST_MOVED_STATUS));
+    byte status = read(TWIST_STATUS);
+    write(TWIST_STATUS, status & ~_BV(TWIST_MOVED_STATUS));
     return (status & _BV(TWIST_MOVED_STATUS)) > 0;
 }
 
 word get_count()
 {
-    return read_register16(TWIST_COUNT);
+    return read16(TWIST_COUNT);
 }
 
 void set_count(word cnt) 
 {
-    write_register16(TWIST_COUNT, cnt);
+    write16(TWIST_COUNT, cnt);
 }

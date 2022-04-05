@@ -15,6 +15,7 @@
 #include <stdint.h>
 #include <time.h>
 #include <string.h>
+#include <math.h>
 
 extern FILE uart_output;
 extern FILE uart_input;

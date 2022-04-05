@@ -30,10 +30,6 @@
 #define TWIST_PRESS_STATUS 2
 #define TWIST_MOVED_STATUS 0
 
-byte read_register(byte addr);
-word read_register16(byte addr);
-void write_register(byte addr, byte data);
-void write_register24(byte addr, uint32_t data);
 byte is_pressed();
 byte is_moved();
 word get_count();

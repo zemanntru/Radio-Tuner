@@ -5,8 +5,8 @@
 #include "si5351.h"
 #include "encoder.h"
 
-#define REF_PARAM_800M  32
 #define DEFAULT_FREQ    12000000
+#define FREQ_800MHZ     800000000
 
 #define max(a,b) ((a)<(b)?(b):(a))
 #define min(a,b) ((a)>(b)?(b):(a))
