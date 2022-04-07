@@ -30,9 +30,12 @@
 #define TWIST_PRESS_STATUS 2
 #define TWIST_MOVED_STATUS 0
 
+bool isConnected();
+
 byte is_pressed();
 byte is_moved();
 word get_count();
 void set_count(word cnt);
+bool check_encoder();
 
 #endif

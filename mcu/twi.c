@@ -1,5 +1,7 @@
 #include "libraries/twi.h"
 
+byte twi_error;
+
 void twi_init()
 {
 	TWSR = 0x01; 
@@ -24,11 +26,17 @@ void twi_stop()
 	TWCR = _BV(TWINT)|_BV(TWSTO)|_BV(TWEN); 
 }
 
-void twi_MT_SLA_W(byte addr)
+void twi_releaseBus()
+{
+    TWCR = _BV(TWEN) | _BV(TWIE) | _BV(TWEA) | _BV(TWINT);
+}
+
+byte twi_MT_SLA_W(byte addr)
 {
     TWDR = (addr << 1) | TW_WRITE;
     TWCR = _BV(TWINT)|_BV(TWEN);                       
     while (!(TWCR & _BV(TWINT)));
+    return TWSR & ~0x1;
 }
 
 void twi_MR_SLA_R(byte addr)

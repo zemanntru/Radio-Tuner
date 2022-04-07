@@ -3,6 +3,7 @@
 
 #include "twi.h"
 #include "uart.h"
+
 #define SI5351_ADDR                     0x60
 #define SI5351_PLLA_ADDR                26
 #define SI5351_PLLB_ADDR                34
@@ -128,11 +129,12 @@ typedef enum {
 
 
 void si5351_init();
-void set_phase(byte port,byte mult);
+void set_phase(byte mult);
 void setup_PLL(plldev_t pll, byte mult, uint32_t num, uint32_t denom);
 void setup_clock(plldev_t pll, byte port, uint32_t div, uint32_t num, uint32_t denom);
 void enable_clocks(bool enabled);
 void setColor(byte red, byte green, byte blue);
 void setup_Rdiv(byte output, si5351RDiv_t div);
+void reset_pll();
 
 #endif

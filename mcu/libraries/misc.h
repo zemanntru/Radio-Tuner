@@ -4,6 +4,7 @@
 #include "pch.h"
 #include "si5351.h"
 #include "encoder.h"
+#include "display.h"
 
 #define DEFAULT_FREQ    12000000
 #define FREQ_800MHZ     800000000
@@ -17,14 +18,17 @@ typedef enum {
     ENCODER_STEP_10KHZ,
     ENCODER_STEP_100KHZ,
     ENCODER_STEP_1MHZ,
+    ENCODER_STEP_10MHZ
 } incr_t;
 
 extern incr_t incr;
 extern uint32_t curFreq;
-extern uint32_t arr_incr[5];
+extern uint32_t arr_incr[6];
+extern bool changed;
 
-void misc_init();
-void read_encoder();
+void set_msg(bool mode);
+void misc_init(bool mode);
+bool read_encoder();
 void set_LO_freq(uint32_t freq);
 
 

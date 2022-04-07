@@ -1,7 +1,7 @@
 CC = avr-gcc
 MCU = atmega324a
 CFLAGS = -Wall -Os -mmcu=${MCU} 
-SRCS = uart.c twi.c encoder.c main.c si5351.c misc.c
+SRCS = uart.c encoder.c main.c twi.c misc.c si5351.c display.c
 OBJS = $(patsubst %.c,%.o,$(SRCS))
 OBJCOPY = avr-objcopy
 TARGET = main

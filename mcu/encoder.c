@@ -93,3 +93,14 @@ void set_count(word cnt)
 {
     write16(TWIST_COUNT, cnt);
 }
+
+
+bool check_encoder()
+{
+    byte ret;
+    twi_start();
+    ret = twi_MT_SLA_W(QWIIC_TWIST_ADDR);
+    twi_stop();
+    return ret == TW_MT_SLA_ACK;
+}
+
