@@ -56,5 +56,5 @@ bool check_display();
 void display_init();
 void write_cmd(byte data);
 void write_data(byte data);
-void display_write(char* msga, char* msgb, char* msgc);
+void display_write(char* msga, char* msgb, char* msgc, char* msgd);
 #endif 

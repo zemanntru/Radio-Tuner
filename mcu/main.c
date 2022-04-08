@@ -35,7 +35,6 @@ int main(void)
     display_init();
     si5351_init();
     misc_init(mode);
-    changed = 0;
 
     while(1)
     {

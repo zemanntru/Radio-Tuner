@@ -1,9 +1,10 @@
 #include "libraries/graphics.hpp"
 
-Graphics::World gui("/dev/ttyUSB0");
+
 
 int main()
 {       
+        Graphics::World gui("/dev/ttyUSB0");
         gui.render();
         return 0;
 }

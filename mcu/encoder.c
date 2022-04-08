@@ -1,7 +1,7 @@
 #include "libraries/encoder.h"
 
 static byte read(byte addr);
-static word read16(byte addr);
+static int16_t read16(byte addr);
 static void write(byte addr, byte data);
 static void write16(byte addr, word data);
 static void write24(byte addr, uint32_t data);
@@ -19,7 +19,7 @@ byte read(byte addr)
     return ret;
 }
 
-word read16(byte addr)
+int16_t read16(byte addr)
 {
     byte msb, lsb;
     twi_start();
@@ -94,6 +94,12 @@ void set_count(word cnt)
     write16(TWIST_COUNT, cnt);
 }
 
+int16_t get_diff()
+{
+    int16_t diff = read16(TWIST_DIFFERENCE);
+    write16(TWIST_DIFFERENCE, 0);
+    return diff;
+}
 
 bool check_encoder()
 {
@@ -104,3 +110,13 @@ bool check_encoder()
     return ret == TW_MT_SLA_ACK;
 }
 
+void set_encoder_time()
+{
+    write16(TWIST_LAST_ENCODER_EVENT, 0);
+}
+
+
+word elapsed_encoder_time()
+{
+  return read16(TWIST_LAST_ENCODER_EVENT);
+}

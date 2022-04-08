@@ -5,6 +5,8 @@ static byte read(byte addr);
 static void enableSpreadSpectrum(bool enabled);
 static void write_bulk(byte addr, byte* data, int len);
 
+uint32_t lastRdivValue[3];
+
 void write(byte addr, byte data)
 {
     twi_start();
@@ -25,19 +27,15 @@ void write_bulk(byte addr, byte* data, int len)
     twi_stop();
 }
 
-void set_phase(byte mult) 
+
+void set_phase(word mult) 
 {
-    mult &= 0xb01111111;
-    twi_start();
-    twi_MT_SLA_W(SI5351_ADDR);
-    twi_MT_write(SI5351_REGISTER_165_CLK0_INITIAL_PHASE_OFFSET);
-    twi_MT_write(0);
-    twi_repeat_start();
-    twi_MT_SLA_W(SI5351_ADDR);
-    twi_MT_write(SI5351_REGISTER_166_CLK1_INITIAL_PHASE_OFFSET);
-    twi_MT_write(mult);
-    twi_stop();
+    mult &= 0b1111111;
+    write(SI5351_REGISTER_165_CLK0_INITIAL_PHASE_OFFSET, 0);
+    write(SI5351_REGISTER_166_CLK1_INITIAL_PHASE_OFFSET, mult);
+    write(SI5351_REGISTER_177_PLL_RESET, (1 << 7) | (1 << 5));
 }
+
 
 byte read(byte addr)
 {
@@ -64,6 +62,7 @@ void enableSpreadSpectrum(bool enabled) {
 
 void si5351_init()
 {
+    for(int i = 0; i < 3; ++i) lastRdivValue[i] = 0;
     byte status = 0;
     /* wait for device to start */
     do {
@@ -80,6 +79,7 @@ void si5351_init()
     write(SI5351_REGISTER_20_CLK4_CONTROL, 0x80);
     write(SI5351_REGISTER_21_CLK5_CONTROL, 0x80);
     write(SI5351_REGISTER_22_CLK6_CONTROL, 0x80);
+    write(SI5351_REGISTER_23_CLK7_CONTROL, 0x80);
 
     write(16, 0x0c);
 	write(17, 0x0c);
@@ -90,10 +90,7 @@ void si5351_init()
 	write(22, 0x0c);
 	write(23, 0x0c);
 
-    enable_clocks(false);
-    enableSpreadSpectrum(true);
-    reset_pll();
-    
+    enableSpreadSpectrum(false);  
 }
 
 void enable_clocks(bool enabled)
@@ -104,16 +101,11 @@ void enable_clocks(bool enabled)
 void setup_PLL(plldev_t pll, byte mult, uint32_t num, uint32_t denom)
 {
     
-
     if( mult < 15 || mult > 90 ) return;    // multiple not supported
     if( (denom == 0) || (denom > 0xFFFFF) ) return;
     if( num > 0xFFFFF) return;
 
-    reset_pll();
-
     uint32_t P1, P2, P3;
-
-    si5351_init();
 
     if(num == 0) {
         P1 = 128 * mult - 512;
@@ -134,7 +126,7 @@ void setup_PLL(plldev_t pll, byte mult, uint32_t num, uint32_t denom)
     write(addr + 5, ((P3 & 0x000F0000) >> 12) | ((P2 & 0x000F0000) >> 16));
     write(addr + 6, (P2 & 0x0000FF00) >> 8);
     write(addr + 7, (P2 & 0x000000FF));
-    write(SI5351_REGISTER_177_PLL_RESET, (1 << 7) | (1 << 5));
+    
 }
 
 void setup_clock(plldev_t pll, byte port, uint32_t div, uint32_t num, uint32_t denom)
@@ -171,16 +163,18 @@ void setup_clock(plldev_t pll, byte port, uint32_t div, uint32_t num, uint32_t d
             addr = SI5351_REGISTER_58_MULTISYNTH2_PARAMETERS_1;
             break;
     }
+
     byte buffer[8] = {
         (P3 & 0xFF00) >> 8,
         P3 & 0xFF,
-        (P1 & 0x30000) >> 16,
+        ((P1 & 0x30000) >> 16) | lastRdivValue[port],
         (P1 & 0xFF00) >> 8,
         P1 & 0xFF,
         ((P3 & 0xF0000) >> 12) | ((P2 & 0xF0000) >> 16),
         (P2 & 0xFF00) >> 8,
         P2 & 0xFF
     };
+
     write_bulk(addr, buffer, 8);
 
     byte clkCtrlReg = 0x0F;
@@ -205,7 +199,66 @@ void setup_clock(plldev_t pll, byte port, uint32_t div, uint32_t num, uint32_t d
     }
 }
 
-void reset_pll() 
+void reset_pll()
 {
     write(SI5351_REGISTER_177_PLL_RESET, (1 << 7) | (1 << 5));
+}
+
+word choose_rdiv(uint32_t *freq)
+{
+    uint8_t r_div = SI5351_R_DIV_1;
+
+    // Choose the correct R divider
+               
+    if(*freq >= 4000 && *freq < 8000) {
+        r_div = SI5351_R_DIV_128;
+        *freq *= 128;
+    } else if(*freq >= 8000  && *freq < 16000) {
+        r_div = SI5351_R_DIV_64;
+        *freq *= 64;
+    } else if(*freq >= 16000 && *freq < 32000) {
+        r_div = SI5351_R_DIV_32;
+        *freq *= 32;
+    } else if(*freq >= 32000 && *freq < 64000) {
+        r_div = SI5351_R_DIV_16;
+        *freq *= 16;
+    } else if(*freq >= 64000 && *freq < 128000) {
+        r_div = SI5351_R_DIV_8;
+        *freq *= 8;
+    } else if(*freq >= 128000 && *freq < 256000) {
+        r_div = SI5351_R_DIV_4;
+        *freq *= 4;
+     } else if(*freq >= 256000 && *freq < 512000) {
+        r_div = SI5351_R_DIV_2;
+        *freq *= 2;
+    }
+    return r_div;
+
+}
+
+void setup_rdiv(byte port, byte div)
+{
+    uint8_t Rreg = SI5351_REGISTER_44_MULTISYNTH0_PARAMETERS_3, regval;
+
+    switch(port)
+    {
+        case SI5351_PORT0: 
+            Rreg = SI5351_REGISTER_44_MULTISYNTH0_PARAMETERS_3;
+            break;
+        case SI5351_PORT1:
+            Rreg = SI5351_REGISTER_52_MULTISYNTH1_PARAMETERS_3;
+            break;
+        case SI5351_PORT2:
+            Rreg = SI5351_REGISTER_60_MULTISYNTH2_PARAMETERS_3;
+            break;
+    }
+
+    regval = read(Rreg);
+    regval &= 0x0F;
+    uint8_t divider = div;
+    divider &= 0x07;
+    divider <<= 4;
+    regval |= divider;
+    lastRdivValue[port] = divider;
+    write(Rreg, regval);
 }

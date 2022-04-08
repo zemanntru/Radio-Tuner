@@ -3,8 +3,8 @@
 
 #include "pch.hpp"
 
-#define WINDOW_WIDTH        600
-#define WINDOW_HEIGHT       200
+#define WINDOW_WIDTH        500
+#define WINDOW_HEIGHT       180
 
 namespace Graphics
 {
@@ -19,14 +19,14 @@ namespace Graphics
         private:
             std::thread mDisplayThread;
             sf::VertexArray surface;
+            sf::VertexArray box;
             sf::Font mfont;
             std::string path;
             std::atomic<bool>done;
-            std::unique_lock<std::mutex>lk1;
-            std::unique_lock<std::mutex>lk2;
             char enable;
-            std::string freq;
-            std::mutex muData;
+            std::mutex mu;
+            std::unique_lock<std::mutex> lk;
+            std::string info;
     };
 }
 

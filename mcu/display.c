@@ -48,7 +48,7 @@ void display_init()
     write_cmd(COMMAND_DISPLAY_ON_CURSOR_OFF_BLINK_OFF);
 }
 
-void display_write(char* msga, char* msgb, char* msgc)
+void display_write(char* msga, char* msgb, char* msgc, char* msgd)
 {
     if(check_display()) {
         write_cmd(COMMAND_CLEAR_DISPLAY);
@@ -64,5 +64,9 @@ void display_write(char* msga, char* msgb, char* msgc)
         write_cmd(COMMAND_SET_CURSOR_LINE_3);
         for(word cnt = 0; msgc[cnt] != '\0' && cnt < 10; )
             write_data(msgc[cnt++]);
+
+        write_cmd(COMMAND_SET_CURSOR_LINE_4);
+        for(word cnt = 0; msgd[cnt] != '\0' && cnt < 10; )
+            write_data(msgd[cnt++]);
     }
 }

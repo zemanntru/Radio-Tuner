@@ -129,12 +129,15 @@ typedef enum {
 
 
 void si5351_init();
-void set_phase(byte mult);
+void set_phase(word mult);
 void setup_PLL(plldev_t pll, byte mult, uint32_t num, uint32_t denom);
 void setup_clock(plldev_t pll, byte port, uint32_t div, uint32_t num, uint32_t denom);
 void enable_clocks(bool enabled);
 void setColor(byte red, byte green, byte blue);
 void setup_Rdiv(byte output, si5351RDiv_t div);
+word choose_rdiv(uint32_t *freq);
+void setup_rdiv(byte port, byte rdiv);
 void reset_pll();
+
 
 #endif

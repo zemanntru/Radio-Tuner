@@ -36,6 +36,9 @@ byte is_pressed();
 byte is_moved();
 word get_count();
 void set_count(word cnt);
+int16_t get_diff();
 bool check_encoder();
+word elapsed_encoder_time();
+void set_encoder_time();
 
 #endif
