@@ -7,6 +7,8 @@
 #include "display.h"
 
 #define DEFAULT_FREQ    12000000
+#define MECHANICAL_MODE     0
+#define SOFTWARE_MODE       1
 
 #define max(a,b) ((a)<(b)?(b):(a))
 #define min(a,b) ((a)>(b)?(b):(a))
@@ -24,8 +26,14 @@ extern incr_t incr;
 extern uint32_t curFreq;
 extern int arr_incr[6];
 extern bool changed;
+extern bool input_mode;
+extern bool radio_mode;
+extern char msg_str[128];
+extern uint32_t LO_freq_A;
+extern uint32_t LO_freq_B;
 
 void set_msg(bool mode);
+void read_messages();
 void misc_init(bool mode);
 bool read_encoder();
 void set_LO_freq(uint32_t freq);

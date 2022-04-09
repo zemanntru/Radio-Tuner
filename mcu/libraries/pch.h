@@ -5,6 +5,7 @@
 #define F_CPU 1000000
 
 #include <avr/io.h>
+#include <avr/interrupt.h>
 #include <util/delay.h>
 #include <util/setbaud.h>
 #include <util/twi.h>
@@ -19,6 +20,9 @@
 
 extern FILE uart_output;
 extern FILE uart_input;
+extern volatile char msg_buffer[128];
+extern volatile int msg_back;
+extern int msg_front;
 
 typedef unsigned char byte;
 typedef unsigned short word;

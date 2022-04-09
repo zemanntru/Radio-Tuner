@@ -2,6 +2,9 @@
 
 FILE uart_output;
 FILE uart_input;
+volatile char msg_buffer[128];
+volatile int msg_back;
+int msg_front;
 
 void usart_init()
 {
@@ -9,7 +12,7 @@ void usart_init()
     UBRR0H = UBRRH_VALUE;
     UBRR0L = UBRRL_VALUE;
     /* Enable receiver and transmitter */
-    UCSR0B = _BV(RXEN0) | _BV(TXEN0);
+    UCSR0B = _BV(RXEN0) | _BV(TXEN0) | _BV(RXCIE0);
     /* Set frame format: 8data, 2stop bit */
     UCSR0C = _BV(USBS0) | _BV(UCSZ01) | _BV(UCSZ00);
 
@@ -26,6 +29,10 @@ void usart_init()
     /* Tie stdin and stdout to USART */
     stdout = &uart_output;
     stdin  = &uart_input;
+
+    msg_front = 0;
+    msg_back = 0;
+    sei();
 }
 
 void usart_send(byte data)
@@ -56,4 +63,10 @@ void usart_putchar(byte c, FILE *stream)
 byte usart_getchar(FILE *stream) 
 {
     return (byte) usart_recv();
+}
+
+ISR(USART0_RX_vect)
+{
+    msg_buffer[msg_back++] = UDR0;
+    msg_back = msg_back & 0x7F;
 }

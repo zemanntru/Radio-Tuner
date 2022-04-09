@@ -2,24 +2,29 @@
 
 incr_t incr;
 int arr_incr[6];
+char msg_str[128];
 bool changed;
 bool scroll;
-bool changed_pll;
+bool input_mode;
+bool radio_mode;
+uint32_t LO_freq_A;
+uint32_t LO_freq_B;
 
 static uint32_t _gcd(uint32_t a, uint32_t b);
 
 void set_msg(bool mode)
 {
-    printf("%d", arr_incr[5]);
-    printf("%d.", arr_incr[4]);
-    printf("%d", arr_incr[3]);
-    printf("%d", arr_incr[2]);
-    printf("%d", arr_incr[1]);
-    printf("%d ", arr_incr[0]);
-    printf("%d ", incr);
-    printf(mode ? "TX" : "RX");
-    printf("\n");
-
+    if(input_mode == 0) {
+        printf("%d", arr_incr[5]);
+        printf("%d.", arr_incr[4]);
+        printf("%d", arr_incr[3]);
+        printf("%d", arr_incr[2]);
+        printf("%d", arr_incr[1]);
+        printf("%d ", arr_incr[0]);
+        printf("%d ", incr);
+        printf(mode ? "TX" : "RX");
+        printf("\n");
+    }
     char msga[20] = "LO freq:\0";
     char msgb[20];
     char msgc[20] = "         \0";
@@ -64,8 +69,8 @@ void misc_init(bool mode)
     set_LO_freq(12000000);
     enable_clocks(true);
     set_msg(mode);
-    changed_pll = false;
     scroll = false;
+    memset(msg_str, 0, sizeof(char)*128);
 }
 
 bool read_encoder()
@@ -114,7 +119,8 @@ void set_LO_freq(uint32_t freq)
 {
     uint32_t fvco = 900000000, div, num, denom, gcd, rdiv;
 
-    rdiv = choose_rdiv(&freq);
+    //freq = freq / 100 * 100;
+    //rdiv = choose_rdiv(&freq);
     div = fvco / freq;
     num = fvco % freq;
     denom = freq;
@@ -131,13 +137,30 @@ void set_LO_freq(uint32_t freq)
 
     setup_clock(SI5351_PLL_A, SI5351_PORT0, div, num, denom);
     setup_clock(SI5351_PLL_A, SI5351_PORT1, div, num, denom);
-    setup_rdiv(SI5351_PORT0, rdiv);
-    setup_rdiv(SI5351_PORT1, rdiv);
-
     set_phase(round((float)fvco / freq));
 }
 
 uint32_t _gcd(uint32_t a, uint32_t b)
 {
     return (a == 0) ? b: _gcd(b % a, a);
+}
+
+void read_messages()
+{
+    #define mod(x) ((x + 128) % 128)
+    if(msg_buffer[mod(msg_back - 1)] == '\n' || msg_buffer[mod(msg_back - 1)] == '\r')
+    {
+        int len = mod(msg_back - msg_front);
+        int cnt = 0;
+        for(int i = 0, idx; i < len; ++i) {
+            idx = mod(msg_front + i);
+            if(!(msg_buffer[idx] == '\n' || msg_buffer[idx] == '\r')) 
+                msg_str[cnt++] = msg_buffer[idx];
+            
+        }
+        msg_str[cnt] = '\0';
+        msg_buffer[msg_back - 1] = '\0';
+        msg_front = msg_back;
+        
+    }
 }
