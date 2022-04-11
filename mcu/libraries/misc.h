@@ -8,8 +8,8 @@
 
 #define DEFAULT_FREQ    12000000
 #define MECHANICAL_MODE     0
-#define SOFTWARE_MODE       1
-
+#define HDSDR_MODE          1
+#define GUI_MODE            2
 #define max(a,b) ((a)<(b)?(b):(a))
 #define min(a,b) ((a)>(b)?(b):(a))
 
@@ -26,7 +26,7 @@ extern incr_t incr;
 extern uint32_t curFreq;
 extern int arr_incr[6];
 extern bool changed;
-extern bool input_mode;
+extern byte input_mode;
 extern bool radio_mode;
 extern char msg_str[128];
 extern uint32_t LO_freq_A;

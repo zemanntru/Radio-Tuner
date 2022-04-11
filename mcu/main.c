@@ -6,13 +6,12 @@
 #include "libraries/misc.h"
 
 
-
-int main(void) 
+int main(void)
 {
     /* initialize all necessary libraries */
 
     /*
-     * if user select RX radio_mode, RX LED LIGHTS UP AND /TXEN is low 
+     * if user select RX radio_mode, RX LED LIGHTS UP AND /TXEN is low
      * initialize output ports (not initiated are input ports)
      * Pin 40 --> DDA0  (LCD reset)
      * Pin 19 --> DDD5  (TXEN EN)
@@ -21,7 +20,7 @@ int main(void)
     DDRA = _BV(DDA0);
     DDRD = _BV(DDD5) | _BV(DDD4);
 
-    // power on LCD display 
+    // power on LCD display
     PORTA |= _BV(PORTA0);
 
     radio_mode = !((PINA & _BV(PINA1)) >> PINA1);
@@ -33,20 +32,26 @@ int main(void)
     display_init();
     si5351_init();
     misc_init(radio_mode);
-   
+
+    while(!check_encoder());
+    set_color(255, 255, 255);
     while(1)
     {
         read_messages();
-        if(!strcmp(msg_str, "mech")) {
+        if(!strcmp(msg_str, "MECH")) {
             radio_mode = !((PINA & _BV(PINA1)) >> PINA1);
             input_mode = MECHANICAL_MODE;
             printf("Entering Mech Mode\n");
 
-        } else if(!strcmp(msg_str, "comp")) {
-            input_mode = SOFTWARE_MODE;
-            printf("Entering Software Mode\n"); 
+        } else if(!strcmp(msg_str, "CMD")) {
+            input_mode = HDSDR_MODE;
+            printf("Entering Command Mode\n");
+        } else if(!strcmp(msg_str, "GUI")) {
+            input_mode = GUI_MODE;
+            printf("Entering GUI Mode\n");
         }
-        if(input_mode) 
+
+        if(input_mode == HDSDR_MODE)
         {
             if(!strcmp(msg_str, "TX0;")) {
                 PORTD |= (_BV(PORTD4) | _BV(PORTD5));
@@ -59,12 +64,12 @@ int main(void)
                 if(radio_mode == 0) {
                     radio_mode = 1;
                     changed = 1;
-                } 
+                }
             } else if(!strcmp(msg_str, "TX;")) {
                 printf(radio_mode ? "TX1;\n" : "TX0;\n");
             } else if(!strncmp(msg_str, "FA", 2)) {
                 if(msg_str[11] == ';') {
-                    LO_freq_A = 
+                    LO_freq_A =
                         100000000 * max(0, msg_str[2] - '0') +
                          10000000 * max(0, msg_str[3] - '0') +
                           1000000 * max(0, msg_str[4] - '0') +
@@ -86,7 +91,7 @@ int main(void)
 
                         set_LO_freq(LO_freq_A);
                     }
-                
+
                 } else if(msg_str[2] == ';'){
                     uint32_t div = LO_freq_A;
                     printf("FA");
@@ -110,7 +115,7 @@ int main(void)
                 }
             } else if(!strncmp(msg_str, "FB", 2)) {
                 if(msg_str[11] == ';') {
-                    LO_freq_B = 
+                    LO_freq_B =
                         100000000 * max(0, msg_str[2] - '0') +
                          10000000 * max(0, msg_str[3] - '0') +
                           1000000 * max(0, msg_str[4] - '0') +
@@ -163,13 +168,13 @@ int main(void)
                     div %= 10;
                     printf("%d0000000000000;\n", div);
             }
-        } else {
+        } else if(input_mode == MECHANICAL_MODE){
             if((PINA & _BV(PINA1)) >> PINA1) {
                 PORTD |= (_BV(PORTD4) | _BV(PORTD5));
                 if(radio_mode == 1) {
                     radio_mode = 0;
                     changed = 1;
-                } 
+                }
             } else {
                 PORTD &= ~(_BV(PORTD5)| _BV(PORTD4));
                 if(radio_mode == 0) {
@@ -178,6 +183,40 @@ int main(void)
                 }
             }
             changed |= read_encoder();
+        } else if(input_mode == GUI_MODE) {
+            
+            if(!strcmp(msg_str, "TX")) {
+                PORTD |= (_BV(PORTD4) | _BV(PORTD5));
+                if(radio_mode == 0) {
+                    radio_mode = 1;
+                    changed = 1;
+                }
+            } else if(!strcmp(msg_str, "RX")) {
+                PORTD &= ~(_BV(PORTD5)| _BV(PORTD4));
+                if(radio_mode == 1) {
+                    radio_mode = 0;
+                    changed = 1;
+                }
+            } else if(msg_str[2] == '.') {
+                changed = 1;
+                arr_incr[5] = max(0, msg_str[0] - '0');
+                arr_incr[4] = max(0, msg_str[1] - '0');
+                arr_incr[3] = max(0, msg_str[3] - '0');
+                arr_incr[2] = max(0, msg_str[4] - '0');
+                arr_incr[1] = max(0, msg_str[5] - '0');
+                arr_incr[0] = max(0, msg_str[6] - '0');
+
+                set_LO_freq(
+                    10000000 * max(0, msg_str[0] - '0') +
+                     1000000 * max(0, msg_str[1] - '0') +
+                      100000 * max(0, msg_str[3] - '0') +
+                       10000 * max(0, msg_str[4] - '0') +
+                        1000 * max(0, msg_str[5] - '0') +
+                         100 * max(0, msg_str[6] - '0')
+                );
+            }
+        } else {
+            printf("Error, mode not recogonized.\n");
         }
         if(changed) set_msg(radio_mode);
         memset(msg_str, 0, sizeof(char)*128);

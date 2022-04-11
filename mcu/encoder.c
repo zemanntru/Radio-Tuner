@@ -64,7 +64,7 @@ void write24(byte addr, uint32_t data)
     twi_stop();
 }
 
-void setColor(byte red, byte green, byte blue)
+void set_color(byte red, byte green, byte blue)
 {
     write24(TWIST_RED, (uint32_t)red << 16 | (uint32_t)green << 8 | blue);
 }
@@ -119,4 +119,18 @@ void set_encoder_time()
 word elapsed_encoder_time()
 {
   return read16(TWIST_LAST_ENCODER_EVENT);
+}
+
+void connect_color(word red, word green, word blue)
+{
+    twi_start();
+    twi_MT_SLA_W(QWIIC_TWIST_ADDR);
+    twi_MT_write(TWIST_CONNECT_RED);
+    twi_MT_write(red >> 8);
+    twi_MT_write(red & 0xFF);
+    twi_MT_write(green >> 8);
+    twi_MT_write(green & 0xFF);
+    twi_MT_write(blue >> 8);
+    twi_MT_write(blue & 0xFF);
+    twi_stop();
 }

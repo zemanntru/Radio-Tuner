@@ -5,26 +5,42 @@ int arr_incr[6];
 char msg_str[128];
 bool changed;
 bool scroll;
-bool input_mode;
+byte input_mode;
 bool radio_mode;
 uint32_t LO_freq_A;
 uint32_t LO_freq_B;
+
+byte spectrum[7][3] = {
+    {255, 0, 0},
+    {255, 165, 0},
+    {255, 255, 0},
+    {0, 128, 0},
+    {0, 0, 255},
+    {75, 0, 130},
+    {238, 130, 238}
+};
 
 static uint32_t _gcd(uint32_t a, uint32_t b);
 
 void set_msg(bool mode)
 {
-    if(input_mode == 0) {
-        printf("%d", arr_incr[5]);
-        printf("%d.", arr_incr[4]);
-        printf("%d", arr_incr[3]);
-        printf("%d", arr_incr[2]);
-        printf("%d", arr_incr[1]);
-        printf("%d ", arr_incr[0]);
-        printf("%d ", incr);
-        printf(mode ? "TX" : "RX");
-        printf("\n");
-    }
+    printf("ACK ");
+    printf("%d", arr_incr[5]);
+    printf("%d.", arr_incr[4]);
+    printf("%d", arr_incr[3]);
+    printf("%d", arr_incr[2]);
+    printf("%d", arr_incr[1]);
+    printf("%d ", arr_incr[0]);
+    printf("%d ", incr);
+    printf(mode ? "TX" : "RX");
+    if(input_mode == MECHANICAL_MODE) 
+        printf(" MECH");
+    else if(input_mode == HDSDR_MODE)
+        printf(" HDSDR");
+    else
+        printf(" GUI");
+    printf("\n");
+    
     char msga[20] = "LO freq:\0";
     char msgb[20];
     char msgc[20] = "         \0";
@@ -78,10 +94,12 @@ bool read_encoder()
     bool flag = 0;
     if(check_encoder())
     {
+        int idx = get_count() % 7;
+        set_color(spectrum[idx][0], spectrum[idx][1], spectrum[idx][2]);
+        
         if(is_pressed()) 
             scroll = !scroll;
             
-
         else if(is_moved()) 
         {
             if(scroll)
@@ -89,7 +107,7 @@ bool read_encoder()
             else {
                 int diff = get_diff();
                 diff = (diff < 0 ? -1 : 1);
-
+                
                 //printf("difference: %d\n", diff);
                 if(incr < ENCODER_STEP_1MHZ)
                     arr_incr[incr] = (arr_incr[incr] + diff + 10) % 10;
@@ -119,8 +137,7 @@ void set_LO_freq(uint32_t freq)
 {
     uint32_t fvco = 900000000, div, num, denom, gcd, rdiv;
 
-    //freq = freq / 100 * 100;
-    //rdiv = choose_rdiv(&freq);
+    freq = freq / 100 * 100;
     div = fvco / freq;
     num = fvco % freq;
     denom = freq;

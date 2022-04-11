@@ -36,9 +36,11 @@ byte is_pressed();
 byte is_moved();
 word get_count();
 void set_count(word cnt);
+void set_color(byte red, byte green, byte blue);
 int16_t get_diff();
 bool check_encoder();
 word elapsed_encoder_time();
 void set_encoder_time();
+void connect_color(word red, word green, word blue);
 
 #endif
