@@ -1,5 +1,6 @@
 #include "libraries/display.h"
 
+/* check if display is connected */
 bool check_display()
 {
     byte ret;
@@ -10,6 +11,12 @@ bool check_display()
     
 }
 
+/* 
+ * modifies the LCD display.
+ * first writes to command register located at 0x00
+ * then write user data
+ */
+
 void write_cmd(byte data)
 {
     twi_start();
@@ -19,6 +26,12 @@ void write_cmd(byte data)
     twi_stop();
 }
 
+/* 
+ * writes to the LCD display screen
+ * first writes to data register located at 0x40
+ * then write user data
+ */
+
 void write_data(byte data)
 {
     twi_start();
@@ -27,6 +40,11 @@ void write_data(byte data)
     twi_MT_write(data);
     twi_stop();
 }
+
+/* 
+ * initialise display screen with all relevant parameters
+ * 
+ */
 
 void display_init()
 {
@@ -48,6 +66,10 @@ void display_init()
     write_cmd(COMMAND_DISPLAY_ON_CURSOR_OFF_BLINK_OFF);
 }
 
+/* 
+ * Write 4 strings on 4 different lines.
+ * The content must be set by the user in advanced.
+ */
 void display_write(char* msga, char* msgb, char* msgc, char* msgd)
 {
     if(check_display()) {

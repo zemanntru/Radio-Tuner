@@ -67,6 +67,7 @@ byte usart_getchar(FILE *stream)
 
 ISR(USART0_RX_vect)
 {
+    /* setup interrupt handler, reads the data register and exits */
     msg_buffer[msg_back++] = UDR0;
     msg_back = msg_back & 0x7F;
 }

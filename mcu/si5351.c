@@ -7,6 +7,13 @@ static void write_bulk(byte addr, byte* data, int len);
 
 uint32_t lastRdivValue[3];
 
+/* 
+ * write procedure for PLL device
+ * works very similar to encoder procedure
+ * refer to encoder procedure to see how it works
+ *
+ */
+
 void write(byte addr, byte data)
 {
     twi_start();
@@ -15,6 +22,10 @@ void write(byte addr, byte data)
     twi_MT_write(data);
     twi_stop();
 }
+
+/*
+ * write procedure but multiple data points
+ */
 
 void write_bulk(byte addr, byte* data, int len)
 {
@@ -27,6 +38,11 @@ void write_bulk(byte addr, byte* data, int len)
     twi_stop();
 }
 
+/*
+ * set phase by writing 0 and mult (previously set to guarantee 90 deg)
+ * to the two different clocks
+ * 
+ */
 
 void set_phase(word mult) 
 {
@@ -36,6 +52,11 @@ void set_phase(word mult)
     write(SI5351_REGISTER_177_PLL_RESET, (1 << 7) | (1 << 5));
 }
 
+/*
+ * read procedure for PLL
+ * very similar to encoder, see reference
+ *
+ */
 
 byte read(byte addr)
 {
@@ -50,6 +71,9 @@ byte read(byte addr)
     return ret;
 }
 
+/*
+ * Code to turn on/off spectrum feature. Not used in the project
+ */
 void enableSpreadSpectrum(bool enabled) {
     byte regval = read(SI5351_REGISTER_149_SPREAD_SPECTRUM_PARAMETERS);
     if(enabled) 
@@ -60,6 +84,10 @@ void enableSpreadSpectrum(bool enabled) {
     write(SI5351_REGISTER_149_SPREAD_SPECTRUM_PARAMETERS, regval);
 }
 
+/* 
+ * Initialise the device in our project
+ * Reset all the internal clocks 
+ */ 
 void si5351_init()
 {
     for(int i = 0; i < 3; ++i) lastRdivValue[i] = 0;
@@ -93,10 +121,20 @@ void si5351_init()
     enableSpreadSpectrum(false);  
 }
 
+/*
+ * Turn off/on the clocks
+ */
+
 void enable_clocks(bool enabled)
 {
     write(SI5351_REGISTER_3_OUTPUT_ENABLE_CONTROL, enabled ? 0x00 : 0xFF);
 }
+
+/*
+ * Setup reference frequency (fvco) based on the XTAL crystal frequency (25MHz)
+ * Code taken and slightly modified from adafruit si5351 library
+ * 
+ */
 
 void setup_PLL(plldev_t pll, byte mult, uint32_t num, uint32_t denom)
 {
@@ -128,6 +166,11 @@ void setup_PLL(plldev_t pll, byte mult, uint32_t num, uint32_t denom)
     write(addr + 7, (P2 & 0x000000FF));
     
 }
+
+/*
+ * Set up out clock frequencies
+ * Code taken and slightly modified from adafruit si5351 library
+ */
 
 void setup_clock(plldev_t pll, byte port, uint32_t div, uint32_t num, uint32_t denom)
 {
@@ -204,6 +247,9 @@ void reset_pll()
     write(SI5351_REGISTER_177_PLL_RESET, (1 << 7) | (1 << 5));
 }
 
+/* 
+ * Functions below are not used for the project 
+ */
 word choose_rdiv(uint32_t *freq)
 {
     uint8_t r_div = SI5351_R_DIV_1;

@@ -1,5 +1,19 @@
 #include "libraries/graphics.hpp"
 
+/*
+ * Disclaimer: 
+ * This is a very hastily written code under short time constraints to act as a GUI
+ * All of the graphics are using primitives given by the SFML library
+ * For more references on how the primitives work, check the SFML documentation
+ * 
+ * Two main classes:
+ * Button class
+ * GUI + main event loop
+ *
+ * The rest is just commands to interact with uart output.
+ *
+ */
+ 
 Graphics::World::World(const std::string &filepath) : 
     done(false), lk(mu, std::defer_lock), path(filepath), to_send(false), error(false), rx_mode(true), mech_mode(true)
 {

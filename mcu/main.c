@@ -20,24 +20,31 @@ int main(void)
     DDRA = _BV(DDA0);
     DDRD = _BV(DDD5) | _BV(DDD4);
 
-    // power on LCD display
+    /* power on LCD display */
     PORTA |= _BV(PORTA0);
+
+    /* radio mode is the current RX/TX position */
 
     radio_mode = !((PINA & _BV(PINA1)) >> PINA1);
     input_mode = MECHANICAL_MODE;
 
+    /* bunch of initializations */
     usart_init();
     twi_init();
-
     display_init();
     si5351_init();
     misc_init(radio_mode);
-
+    
+    /* wait for rotary encoder to connect */
     while(!check_encoder());
     set_color(255, 255, 255);
+
     while(1)
     {
+        // parse any incoming messages to the terminal
         read_messages();
+
+        // set input mode if message permits
         if(!strcmp(msg_str, "MECH")) {
             radio_mode = !((PINA & _BV(PINA1)) >> PINA1);
             input_mode = MECHANICAL_MODE;
@@ -53,6 +60,7 @@ int main(void)
 
         if(input_mode == HDSDR_MODE)
         {
+            /* Process CAT commands */
             if(!strcmp(msg_str, "TX0;")) {
                 PORTD |= (_BV(PORTD4) | _BV(PORTD5));
                 if(radio_mode == 1) {
@@ -169,22 +177,30 @@ int main(void)
                     printf("%d0000000000000;\n", div);
             }
         } else if(input_mode == MECHANICAL_MODE){
+
+            /* Process commands from physical input */
+
             if((PINA & _BV(PINA1)) >> PINA1) {
+                // RX mode, output high
                 PORTD |= (_BV(PORTD4) | _BV(PORTD5));
                 if(radio_mode == 1) {
                     radio_mode = 0;
                     changed = 1;
                 }
             } else {
+                // TX mode, output low
                 PORTD &= ~(_BV(PORTD5)| _BV(PORTD4));
                 if(radio_mode == 0) {
                     radio_mode = 1;
                     changed = 1;
                 }
             }
+            // true of knob is twisted
             changed |= read_encoder();
+
         } else if(input_mode == GUI_MODE) {
-            
+            /* Process Commands from GUI */
+
             if(!strcmp(msg_str, "TX")) {
                 PORTD |= (_BV(PORTD4) | _BV(PORTD5));
                 if(radio_mode == 0) {
@@ -198,6 +214,8 @@ int main(void)
                     changed = 1;
                 }
             } else if(msg_str[2] == '.') {
+
+                // frequency in form XX.XXXX
                 changed = 1;
                 arr_incr[5] = max(0, msg_str[0] - '0');
                 arr_incr[4] = max(0, msg_str[1] - '0');
@@ -218,7 +236,14 @@ int main(void)
         } else {
             printf("Error, mode not recogonized.\n");
         }
+        /* 
+         * only update code when system detects a change such as
+         * RX/TX change, frequency, or cursor position
+         */
+         
         if(changed) set_msg(radio_mode);
+
+        /* reset message buffer */
         memset(msg_str, 0, sizeof(char)*128);
     }
     return 0;
