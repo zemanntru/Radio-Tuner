@@ -10,3 +10,5 @@ Code involved in the software define radio control and app.
 | baud rate                | 2400 |
 | parity                   | none |
 
+<center><img src="./app-screenshot.png" alt="Diagram 1" ></img></center>
+<center><img src="./radio_tuner.jpg" alt="Diagram 1" ></img></center>
