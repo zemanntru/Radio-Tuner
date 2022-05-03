@@ -1,7 +1,6 @@
-# ECE295
-##### Summary
+## Overview
+Code for a hardware design project: controlling the local oscillator frequency for a radio submodule. The mcu folder contains code that allows the user to control the Adafruit Si5351 clock generator by twisting the Sparkfun Qwiic Twist I2C encoder. The gui folder provides a virtual numberpad app that allows the user to control the Si5351 through a breakout board.
 
-Code involved in the software define radio control and app.
 
 | Serial Terminal Settings |      |
 | ------------------------ | ---- |
