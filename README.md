@@ -1,5 +1,5 @@
 ## Overview
-Code for a hardware design project: controlling the local oscillator frequency for a radio submodule. The microcontroller used is ATMega324. The mcu folder contains code that allows the user to control the Adafruit Si5351 clock generator by adjusting the Sparkfun Qwiic Twist I2C rotary encoder. The gui folder provides a virtual numberpad app that allows the user to control the Si5351 through a breakout board.
+Code for a hardware design project: controlling the local oscillator frequency for a radio submodule. The microcontroller used is ATMega324. The mcu folder contains code that allows the user to control the Adafruit Si5351 clock generator by adjusting the Sparkfun Qwiic Twist I2C rotary encoder, as well as toggling between transmission and reception mode for the radio via the RX/TX switch. The gui folder provides a virtual numberpad app that allows the user to control the Si5351 through a breakout board.
 
 
 | Serial Terminal Settings |      |
